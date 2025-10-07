@@ -3,32 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>KarriereGenie – CV Analyse, die Ergebnisse liefert</title>
+  <title>KarriereGenie – CV-Analyse mit klaren To-dos</title>
+  <meta name="description" content="KarriereGenie analysiert deinen Lebenslauf und liefert dir eine präzise Prioritäten-Liste, um schneller mehr Interviews zu bekommen.">
+  <meta property="og:title" content="KarriereGenie – CV-Analyse mit klaren To-dos">
+  <meta property="og:description" content="5–7 konkrete Änderungen, ATS-Check, Bonus: LinkedIn-Quickwins.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/">
+  <meta name="theme-color" content="#0b1220">
+  <!-- Analytics (optional, später Domain eintragen)
+  <script defer data-domain="DEINE-DOMAIN" src="https://plausible.io/js/script.js"></script>
+  -->
   <style>
-    :root{--bg:#0b1220;--card:#121a2a;--txt:#e6eefb;--mut:#9db2cf;--pri:#3b82f6}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
-    .wrap{max-width:960px;margin:0 auto;padding:32px}
-    .hero{display:grid;gap:18px;padding:32px;border:1px solid #26334d;border-radius:14px;background:var(--card)}
-    h1{margin:0;font-size:32px} p{margin:0 0 8px}
-    .bullets{display:grid;gap:6px;color:var(--mut)}
-    .cta{margin-top:8px;display:inline-block;background:var(--pri);color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none}
-    .foot{margin-top:24px;color:var(--mut);font-size:12px}
+    :root{--bg:#0b1220;--card:#121a2a;--txt:#e6eefb;--mut:#9db2cf;--pri:#3b82f6;--ok:#10b981;--bd:#26334d}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
+    a{color:inherit}
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:22px}
+    .hero{display:grid;gap:16px;margin-top:6vh}
+    h1{margin:0;font-size:34px;line-height:1.15}
+    p{margin:0 0 8px}
+    .mut{color:var(--mut)}
+    .row{display:grid;gap:12px;grid-template-columns:1fr; margin-top:18px}
+    @media(min-width:880px){ .row{grid-template-columns:1fr 1fr} }
+    .bullet{display:flex;gap:8px;align-items:flex-start;color:var(--mut)}
+    .tick{color:var(--ok);font-weight:700}
+    .cta{display:inline-block;background:var(--pri);color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:600}
+    .cta:focus,.cta:hover{filter:brightness(1.05)}
+    .foot{margin-top:18px;color:var(--mut);font-size:12px}
+    .nav{display:flex;gap:14px;justify-content:flex-end;font-size:14px;margin-top:8px}
+    .nav a{color:var(--mut);text-decoration:none}
+    .nav a:hover{text-decoration:underline}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:#0e172a;border:1px solid var(--bd);padding:6px 10px;border-radius:999px;color:var(--mut);font-size:12px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="hero">
+    <div class="nav">
+      <a href="/impressum.html">Impressum</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+    </div>
+
+    <section class="card hero">
+      <span class="badge">MVP · Früher Zugang</span>
       <h1>Dein CV. Klare Stärken. Konkrete To-dos.</h1>
       <p>KarriereGenie analysiert deinen Lebenslauf und liefert dir eine präzise Prioritäten-Liste für mehr Interviews.</p>
-      <div class="bullets">
-        <div>✓ 5–7 konkrete Änderungen mit Beispielen</div>
-        <div>✓ ATS-Check (Keywords, Struktur)</div>
-        <div>✓ Bonus: LinkedIn-Quickwins</div>
+
+      <div class="row">
+        <div>
+          <div class="bullet"><span class="tick">✓</span> 5–7 konkrete Änderungen mit Beispielen</div>
+          <div class="bullet"><span class="tick">✓</span> ATS-Check (Keywords, Struktur, Lesbarkeit)</div>
+          <div class="bullet"><span class="tick">✓</span> Bonus: LinkedIn-Quickwins</div>
+        </div>
+        <div>
+          <p class="mut">So läuft’s:</p>
+          <div class="bullet"><span class="tick">1</span> Buche Analyse / Sende deinen CV (PDF)</div>
+          <div class="bullet"><span class="tick">2</span> Erhalte To-do-Liste & Beispiel-Formulierungen</div>
+          <div class="bullet"><span class="tick">3</span> Optional: 1x Feinschliff-Feedback</div>
+        </div>
       </div>
-      <a class="cta" href="YOUR_GUMROAD_URL">Jetzt Analyse starten (19€)</a>
-      <!-- Temporärer Platzhalter: <a class="cta" href="mailto:hello@example.com?subject=CV%20Analysis">Jetzt anfragen</a> -->
-      <div class="foot">MVP • Zahlungen via Gumroad • Antwort innerhalb 24–48h</div>
-    </div>
+
+      <!-- TODO: Wenn Gumroad-Produkt live, hier URL ersetzen -->
+      <a class="cta" href="mailto:hello@example.com?subject=CV%20Analyse%20anfragen&body=Hi%2C%20ich%20m%C3%B6chte%20meinen%20CV%20analysieren%20lassen.%20Beste%20Gr%C3%BC%C3%9Fe%20%E2%80%93">Jetzt Analyse anfragen (19€)</a>
+      <!-- Beispiel später:
+      <a class="cta" href="https://gumroad.com/l/DEIN_PRODUKT">Jetzt Analyse starten (19€)</a>
+      -->
+
+      <div class="foot">Antwort innerhalb 24–48h • Bezahlung via Gumroad (bald) • MVP</div>
+    </section>
   </div>
 </body>
 </html>
