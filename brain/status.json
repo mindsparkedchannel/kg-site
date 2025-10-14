@@ -1,0 +1,203 @@
+{
+  "schema_version": "1.2.0",
+  "meta": {
+    "last_updated": "2025-10-14T07:09:45.330806Z",
+    "session_current": "s20251011114808",
+    "session_total": 18,
+    "project_hours_total": 0.21666666666666665
+  },
+  "project": {
+    "name": "KarriereGenie",
+    "phase": "month_1_build",
+    "day_current": 0,
+    "day_total": 90,
+    "status": "on_track",
+    "health": "healthy"
+  },
+  "tasks": {
+    "T002": {
+      "title": "Make.com Workflow Setup",
+      "status": "blocked",
+      "progress": 10,
+      "priority": "high",
+      "assigned": "human",
+      "deadline": "2025-10-12",
+      "blockers": [
+        "api_key_pending"
+      ],
+      "created": "2025-10-03",
+      "started": "2025-10-03",
+      "estimated_hours": 3,
+      "spent_hours": 0.2
+    },
+    "T004": {
+      "title": "Prompt engineering for CV analysis",
+      "status": "todo",
+      "progress": 0,
+      "priority": "high",
+      "assigned": "human",
+      "deadline": "2025-10-13",
+      "blockers": [],
+      "created": "2025-10-03",
+      "estimated_hours": 3,
+      "spent_hours": 0
+    },
+    "T001": {
+      "title": "Deploy Landing Page",
+      "status": "in_progress",
+      "progress": 60,
+      "priority": "high",
+      "assigned": "human",
+      "deadline": "2025-10-10",
+      "blockers": [],
+      "created": "2025-10-03",
+      "started": "2025-10-03",
+      "estimated_hours": 4,
+      "spent_hours": 1
+    },
+    "25e6d945-44a5-80c6-95b6-f209b550c319": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "2526d945-44a5-810b-952d-d8b6826b911b": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "2526d945-44a5-81a5-beb5-cfecfc02e944": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "2526d945-44a5-8181-ada9-ce46cb80e8f2": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "2526d945-44a5-8134-b8c2-e7cbee00a3e2": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "2526d945-44a5-81a0-85d0-f499c37801f6": {
+      "title": "(ohne Titel)",
+      "status": "todo",
+      "priority": "normal",
+      "progress": 0,
+      "deadline": null,
+      "assigned": []
+    },
+    "TASK-2025-001": {
+      "title": "Website Homepage Redesign",
+      "status": "In Progress",
+      "progress": 65,
+      "priority": "High",
+      "assigned": "Maria, John",
+      "deadline": "2025-10-14",
+      "estimated_hours": 24,
+      "spent_hours": 15.5,
+      "blockers": [
+        "Waiting for client feedback on color scheme"
+      ],
+      "notes": "Focus on mobile responsiveness and accessibility improvements",
+      "updated": "2025-10-13T17:25:39.986Z"
+    },
+    "TASK-2025-002": {
+      "title": "Weekly Team Meeting Preparation",
+      "status": "To Do",
+      "progress": 0,
+      "priority": "Medium",
+      "assigned": "Sarah, Team A",
+      "deadline": "2025-10-10",
+      "estimated_hours": 2,
+      "spent_hours": 0,
+      "blockers": [],
+      "notes": "Prepare agenda and gather project status updates from all team members",
+      "updated": "2025-10-13T17:25:39.986Z"
+    },
+    "TASK-2025-003": {
+      "title": "Database Migration Plan",
+      "status": "Blocked",
+      "progress": 30,
+      "priority": "High",
+      "assigned": "Alex, Team B",
+      "deadline": "2025-10-12",
+      "estimated_hours": 12,
+      "spent_hours": 4,
+      "blockers": [
+        "Need access credentials from IT department"
+      ],
+      "notes": "Document includes current schema and transition strategy",
+      "updated": "2025-10-13T17:25:39.986Z"
+    }
+  },
+  "decisions": {
+    "recent": [
+      {
+        "ts": "2025-10-08",
+        "decision": "TEST3",
+        "notes": "testtest3",
+        "tags": [
+          "Urgent",
+          "Financial"
+        ],
+        "source": "notion"
+      },
+      {
+        "ts": "2025-10-07",
+        "decision": "TEST1",
+        "notes": "testtest1",
+        "tags": [
+          "Financial",
+          "Long-term"
+        ],
+        "source": "notion"
+      },
+      {
+        "ts": "2025-10-05",
+        "decision": "TEST2",
+        "notes": "testtest2",
+        "tags": [
+          "Long-term",
+          "Personal"
+        ],
+        "source": "notion"
+      }
+    ]
+  },
+  "snapshots": {
+    "weekly_count": 0,
+    "daily_count": 0,
+    "brain": {
+      "path": "state/brain_snapshot.json",
+      "updated_at": "2025-10-09T21:24:48.768Z"
+    }
+  },
+  "next_session": {
+    "priorities": [
+      "Finish T001: Deploy Landing Page"
+    ],
+    "estimated_duration": 120
+  },
+  "config": {
+    "notion": {
+      "notion_db_id": "2876d94544a580b49a80f0aaf32371d5"
+    }
+  }
+}
