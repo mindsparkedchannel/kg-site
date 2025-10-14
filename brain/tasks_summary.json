@@ -1,7 +1,7 @@
 {
-  "inbox": 4,
+  "inbox": 0,
   "running": 0,
-  "done": 0,
+  "done": 5,
   "failed": 0,
-  "total": 5
+  "total": 6
 }
