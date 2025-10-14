@@ -1,39 +1,31 @@
 name: Brain → Site Sync
-
 on:
-  schedule:
-    - cron: "*/30 * * * *"
+  schedule: [{ cron: "*/30 * * * *" }]
   workflow_dispatch:
-
-permissions:
-  contents: write
-  actions: read
-
-concurrency:
-  group: kg-site-brain-sync
-  cancel-in-progress: false
-
+permissions: { contents: write, actions: read }
+concurrency: { group: kg-site-brain-sync, cancel-in-progress: false }
 jobs:
   sync:
     runs-on: ubuntu-latest
     env:
-      BASE: https://kg-brain.mindsparked-channel.workers.dev
+      BASE: "https://kg-brain.mindsparked-channel.workers.dev"
     steps:
       - uses: actions/checkout@v4
-
-      - name: Fetch brain artifacts
+      - name: Fetch brain artifacts (robust)
+        shell: bash
         run: |
-          set -euo pipefail
+          set -u -o pipefail
           mkdir -p brain
-          curl -fsSL "\https://kg-brain.mindsparked-channel.workers.dev/api/v1/status"            -o brain/status.json
-          curl -fsSL "\https://kg-brain.mindsparked-channel.workers.dev/api/v1/context"           -o brain/context.md
-          curl -fsSL "\https://kg-brain.mindsparked-channel.workers.dev/api/v1/tasks/summary"     -o brain/tasks_summary.json
-          curl -fsSL "\https://kg-brain.mindsparked-channel.workers.dev/api/v1/tasks?state=inbox" -o brain/tasks_inbox.json
-          curl -fsSL "\https://kg-brain.mindsparked-channel.workers.dev/api/v1/tasks?state=done"  -o brain/tasks_done.json
-
+          fetch()    { url="$1"; out="$2"; if curl -fsS "$url" -o "$out"; then echo "ok $out"; else echo '{"ok":false,"error":"fetch-failed"}' > "$out"; echo "stub $out"; fi; }
+          fetch_md() { url="$1"; out="$2"; if curl -fsS "$url" -o "$out"; then echo "ok $out"; else echo "# unavailable" > "$out"; echo "stub $out"; fi; }
+          fetch    "$BASE/api/v1/status"            brain/status.json
+          fetch_md "$BASE/api/v1/context"           brain/context.md
+          fetch    "$BASE/api/v1/tasks/summary"     brain/tasks_summary.json
+          fetch    "$BASE/api/v1/tasks?state=inbox" brain/tasks_inbox.json
+          fetch    "$BASE/api/v1/tasks?state=done"  brain/tasks_done.json
       - name: Commit if changed
         run: |
-          set -e
+          set -u
           if git diff --quiet -- brain/status.json brain/context.md brain/tasks_summary.json brain/tasks_inbox.json brain/tasks_done.json; then
             echo "No changes."
             exit 0
@@ -41,5 +33,5 @@ jobs:
           git config user.name  "kg-site-bot"
           git config user.email "actions@users.noreply.github.com"
           git add brain/status.json brain/context.md brain/tasks_summary.json brain/tasks_inbox.json brain/tasks_done.json
-          git commit -m "chore(site): sync brain artifacts + tasks"
+          git commit -m "chore(site): sync brain artifacts + tasks (robust)"
           git push
