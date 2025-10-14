@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KarriereGenie — Tasks</title>
+  <style>
+    :root { --bg:#0b1220; --card:#121a2a; --text:#e6eefb; --muted:#9db2cf; --accent:#60a5fa; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; }
+    * { box-sizing: border-box }
+    body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui,Segoe UI,Roboto,Arial,sans-serif; }
+    .wrap { max-width:1024px; margin:0 auto; padding:24px }
+    h1 { margin:0 0 10px 0; font-size:22px }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center }
+    .card { background:var(--card); border:1px solid #26334d; border-radius:12px; padding:14px }
+    .pill { padding:6px 10px; border-radius:999px; background:#1d2a44; border:1px solid #2b3b5a; color:var(--text); cursor:pointer; }
+    .pill.active { outline:2px solid var(--accent); }
+    .muted { color:var(--muted) }
+    .counts { display:flex; gap:10px; flex-wrap:wrap }
+    .counts .kv { background:#0e1626; border:1px solid #2b3b5a; border-radius:10px; padding:10px 12px; }
+    .kv b { display:block; font-size:18px }
+    table { width:100%; border-collapse: collapse; margin-top:10px }
+    th, td { padding:10px; border-bottom:1px solid #26334d; vertical-align:top }
+    th { text-align:left; font-weight:600; color:var(--muted) }
+    a { color: var(--accent); text-decoration: none }
+    .label { display:inline-block; padding:3px 8px; border:1px solid #2b3b5a; border-radius:999px; margin-right:6px; margin-bottom:4px; background:#0e1626; color:#c7d2fe; font-size:12px }
+    .toolbar { display:flex; gap:8px; align-items:center }
+    button { padding:8px 12px; border-radius:10px; border:1px solid #2b3b5a; background:#1d2a44; color:var(--text); cursor:pointer }
+    footer { margin-top:20px; color:var(--muted); font-size:12px }
+    .ok { color:var(--ok) } .warn{ color:var(--warn) } .err{ color:var(--err) }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between">
+      <h1>KarriereGenie — Task-Dashboard</h1>
+      <div class="toolbar">
+        <button id="btnRefresh">Aktualisieren</button>
+        <span class="muted">Auto-Refresh: <span id="autoSec">30</span>s</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="counts" class="counts"></div>
+      <div class="row" style="margin-top:10px">
+        <span class="pill active" data-state="inbox">Inbox</span>
+        <span class="pill" data-state="running">Running</span>
+        <span class="pill" data-state="done">Done</span>
+        <span class="pill" data-state="failed">Failed</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th style="width:80px">ID</th>
+            <th>Titel</th>
+            <th style="width:220px">Labels</th>
+            <th style="width:180px">Zeit</th>
+          </tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="4" class="muted">Lade…</td></tr></tbody>
+      </table>
+    </div>
+
+    <footer>
+      <span class="muted">Quelle: brain/tasks_*.json (Read-only). Build: 2025-10-14 12:49:34 +02:00</span>
+    </footer>
+  </div>
+
+<script>
+const S = (sel, el=document) => el.querySelector(sel);
+const SS = (sel, el=document) => [...el.querySelectorAll(sel)];
+const fmt = (s) => s ? new Date(s).toLocaleString() : '';
+const stateToLabel = { inbox:'kg-inbox', running:'kg-running', done:'kg-done', failed:'kg-failed' };
+
+async function getJson(path){
+  try{
+    const r = await fetch(path, { cache: 'no-store' });
+    if(!r.ok) return null;
+    return await r.json();
+  }catch{ return null }
+}
+
+async function loadAll(){
+  const summary = await getJson('brain/tasks_summary.json');
+  const inbox   = await getJson('brain/tasks_inbox.json');
+  const done    = await getJson('brain/tasks_done.json');
+  // running/failed optional – werden aus brain/tasks?state=... nach Bedarf künftig ergänzt
+  const counts = summary || { inbox: (inbox?.items?.length||0), running: 0, done: (done?.items?.length||0), failed: 0, total: 0 };
+  renderCounts(counts);
+  const active = S('.pill.active')?.dataset.state || 'inbox';
+  renderTable(active, inbox, done);
+}
+
+function renderCounts(c){
+  const el = S('#counts'); el.innerHTML='';
+  const kv = (k,v,cls='') => `<div class="kv"><b class="${cls}">${v}</b><div class="muted">${k}</div></div>`;
+  el.insertAdjacentHTML('beforeend', kv('Inbox', c.inbox||0));
+  el.insertAdjacentHTML('beforeend', kv('Running', c.running||0));
+  el.insertAdjacentHTML('beforeend', kv('Done', c.done||0, 'ok'));
+  el.insertAdjacentHTML('beforeend', kv('Failed', c.failed||0, 'err'));
+  el.insertAdjacentHTML('beforeend', kv('Total', c.total||((c.inbox||0)+(c.running||0)+(c.done||0)+(c.failed||0))));
+}
+
+function renderTable(state, inbox, done){
+  const rows = S('#rows'); rows.innerHTML='';
+  let items = [];
+  if(state==='inbox') items = inbox?.items||[];
+  else if(state==='done') items = done?.items||[];
+  else items = []; // running/failed: später ergänzen
+
+  if(!items.length){
+    rows.innerHTML = `<tr><td colspan="4" class="muted">Keine Einträge.</td></tr>`;
+    return;
+  }
+  for(const it of items){
+    const labels = (it.labels||[]).map(n => `<span class="label">${n}</span>`).join('');
+    const link = it.url ? `<a href="${it.url}" target="_blank" rel="noopener">${it.title||'(ohne Titel)'}</a>` : (it.title||'(ohne Titel)');
+    rows.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>#${it.id||''}</td>
+        <td>${link}</td>
+        <td>${labels}</td>
+        <td><div><span class="muted">erstellt</span> ${fmt(it.created_at)}</div>
+            <div><span class="muted">aktualisiert</span> ${fmt(it.updated_at)}</div></td>
+      </tr>`);
+  }
+}
+
+function bind(){
+  SS('.pill').forEach(p => p.addEventListener('click', () => {
+    SS('.pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    loadAll();
+  }));
+  S('#btnRefresh').addEventListener('click', loadAll);
+  // Auto-Refresh
+  let sec = 30;
+  setInterval(()=>{ sec--; if(sec<=0){ sec=30; loadAll(); } S('#autoSec').textContent=String(sec); }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
+</script>
+</body>
+</html>
