@@ -1,0 +1,48 @@
+name: kg-auto-worker
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *" # optional: stündlich; kannst du entfernen
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-inbox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move kg-inbox → kg-done (stub)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            // offene Issues mit Label "kg-inbox"
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'kg-inbox', per_page: 50
+            });
+
+            if (issues.length === 0) {
+              core.info('Keine kg-inbox Issues gefunden.');
+              return;
+            }
+
+            for (const it of issues) {
+              // PRs überspringen
+              if (it.pull_request) continue;
+
+              const existing = it.labels.map(l => typeof l === 'string' ? l : l.name);
+              const keep = existing.filter(n => n !== 'kg-inbox' && n !== 'kg-running' && n !== 'kg-done');
+              const newLabels = [...new Set([...keep, 'kg-done'])];
+
+              await github.rest.issues.update({
+                owner, repo, issue_number: it.number, labels: newLabels
+              });
+
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: it.number,
+                body: 'Auto-Worker (stub): processed → **kg-done** ✅'
+              });
+
+              core.info(`Issue #${it.number} → kg-done`);
+            }
