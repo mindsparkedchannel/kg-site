@@ -26,12 +26,14 @@ jobs:
       - name: Commit if changed
         run: |
           set -u
-          if git diff --quiet -- brain/status.json brain/context.md brain/tasks_summary.json brain/tasks_inbox.json brain/tasks_done.json; then
+          git config user.name  "kg-site-bot"
+          git config user.email "actions@users.noreply.github.com"
+          # Alle brain-Dateien stagen (inkl. untracked)
+          git add -A brain
+          # Gibt es gestagte Änderungen?
+          if git diff --cached --quiet; then
             echo "No changes."
             exit 0
           fi
-          git config user.name  "kg-site-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add brain/status.json brain/context.md brain/tasks_summary.json brain/tasks_inbox.json brain/tasks_done.json
-          git commit -m "chore(site): sync brain artifacts + tasks (robust)"
+          git commit -m "chore(site): sync brain artifacts + tasks"
           git push
