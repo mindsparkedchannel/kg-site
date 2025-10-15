@@ -1,6 +1,18 @@
 name: kg-auto-worker
 on:
   workflow_dispatch:
+    inputs:
+      DRY_RUN:
+        description: "Nur simulieren"
+        type: boolean
+        required: false
+        default: true
+      MAX_ISSUES:
+        description: "Max. zu verarbeitende Issues"
+        type: number
+        required: false
+        default: 5
+
   schedule:
     - cron: "0 * * * *" # optional: stündlich; kannst du entfernen
 
