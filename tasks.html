@@ -142,7 +142,7 @@ function bind(){
 
 document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
 </script>
-<div id="kg-status-badge" style="position:fixed;right:12px;bottom:12px;padding:6px 10px;border-radius:12px;border:1px solid var(--kg-badge-border);box-shadow:0 3px 10px rgba(0,0,0,.35);font:600 13px/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--kg-badge-fg);background:var(--kg-badge-bg);backdrop-filter:saturate(1.1) blur(2px);-webkit-backdrop-filter:saturate(1.1) blur(2px);">
+<div id="kg-status-badge" style="position:fixed;right:12px;bottom:12px;padding:6px 10px;border-radius:12px;border:1px solid var(--kg-badge-border,#D1D5DB);box-shadow:0 3px 10px rgba(0,0,0,.35);font:600 13px/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--kg-badge-fg,#111827);background:var(--kg-badge-bg,rgba(243,244,246,.96));backdrop-filter:saturate(1.1) blur(2px);-webkit-backdrop-filter:saturate(1.1) blur(2px);">
   <span>Last sync: <strong id="kg-sync-ts">…</strong></span>
 </div>
 <script>
@@ -223,5 +223,10 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
   try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply); } catch {}
 })();
 </script>
+<style id="kg-badge-css">
+#kg-status-badge, #kg-status-badge * {
+  color: var(--kg-badge-fg,#111827) !important;
+}
+</style>
 </body>
 </html>
