@@ -1,4 +1,5 @@
 name: brain-sync (dispatch)
+
 on:
   repository_dispatch:
     types: [brain-sync]
@@ -9,40 +10,40 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    env:
-      BASE: ${{ vars.WORKER_BASE }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set BASE fallback
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine WORKER_BASE
         run: |
           set -e
-          if [ -z "$BASE" ]; then
-            BASE="https://kg-brain.mindsparked-channel.workers.dev"
+          if [ -n "${{ vars.WORKER_BASE }}" ]; then
+            echo "WORKER_BASE=${{ vars.WORKER_BASE }}" >> $GITHUB_ENV
+          else
+            echo "WORKER_BASE=https://kg-brain.mindsparked-channel.workers.dev" >> $GITHUB_ENV
           fi
-          echo "BASE=$BASE" >> $GITHUB_ENV
-      - name: Fetch brain artifacts
+          echo "Using WORKER_BASE=$WORKER_BASE"
+
+      - name: Fetch brain payloads
         run: |
           set -e
           mkdir -p brain
-          fetch() { curl -fsSL "$1" -o "$2" || true; }
-          fetch "$BASE/api/v1/status"            brain/status.json
-          fetch "$BASE/api/v1/context"           brain/context.md
-          fetch "$BASE/api/v1/tasks/summary"     brain/tasks_summary.json
-          fetch "$BASE/api/v1/tasks?state=inbox" brain/tasks_inbox.json
-          fetch "$BASE/api/v1/tasks?state=done"  brain/tasks_done.json
-          [ -s brain/status.json ]        || echo "{}"  > brain/status.json
-          [ -s brain/context.md ]         || echo "# context" > brain/context.md
-          [ -s brain/tasks_summary.json ] || echo "{}"  > brain/tasks_summary.json
-          [ -s brain/tasks_inbox.json ]   || echo "[]"  > brain/tasks_inbox.json
-          [ -s brain/tasks_done.json ]    || echo "[]"  > brain/tasks_done.json
-      - name: Commit if changed
+          curl -sSf "$WORKER_BASE/api/v1/status"          -o brain/status.json
+          curl -sSf "$WORKER_BASE/api/v1/context"         -o brain/context.md
+          curl -sSf "$WORKER_BASE/api/v1/tasks/summary"   -o brain/tasks_summary.json
+          curl -sSf "$WORKER_BASE/api/v1/tasks?state=inbox" -o brain/tasks_inbox.json
+          curl -sSf "$WORKER_BASE/api/v1/tasks?state=done"  -o brain/tasks_done.json
+
+      - name: Commit only on diff
         run: |
-          git config user.name "kg-bot"
-          git config user.email "kg-bot@users.noreply.github.com"
-          git add -A brain
-          if git diff --cached --quiet; then
-            echo "No changes."
+          set -e
+          git config user.name  "kg-site bot"
+          git config user.email "kg-site-bot@users.noreply.github.com"
+          if [ -z "$(git status --porcelain brain)" ]; then
+            echo "No changes in brain/* – skipping commit."
             exit 0
           fi
-          git commit -m "chore(site): sync brain artifacts (repository_dispatch)"
+          git add brain
+          ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          git commit -m "brain-sync: update brain/* at ${ts}"
           git push
