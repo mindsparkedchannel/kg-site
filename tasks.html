@@ -142,5 +142,20 @@ function bind(){
 
 document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
 </script>
+<div id="kg-status-badge" style="position:fixed;right:12px;bottom:12px;padding:6px 10px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);background:#f3f4f6;font:12px/1.4 system-ui,sans-serif;z-index:9999">
+  <span>Last sync: <strong id="kg-sync-ts">…</strong></span>
+</div>
+<script>
+(async () => {
+  try {
+    const r = await fetch('brain/status.json', { cache: 'no-store' });
+    const s = await r.json();
+    const dt = (s && (s.updated_utc || s.updated || s.ts)) || null;
+    document.getElementById('kg-sync-ts').textContent = dt ? new Date(dt).toLocaleString() : 'n/a';
+  } catch {
+    document.getElementById('kg-sync-ts').textContent = 'n/a';
+  }
+})();
+</script>
 </body>
 </html>
