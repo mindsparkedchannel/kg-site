@@ -157,42 +157,52 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
   }
 })();
 </script>
-<script id="kg-status-badge-v2">
+<script id="kg-status-badge-v3">
 (async () => {
+  const el = document.getElementById('kg-sync-ts');
+  if (!el) return;
+
   function pickTs(obj){
-    const keys = ['updated_utc','updated','ts','generated_at','last_sync_utc','lastUpdated'];
-    for(const k of keys){ if(obj && obj[k]) return Date.parse(obj[k]); }
+    const keys = ['updated_utc','updated','ts','generated_at','last_sync_utc','lastUpdated','last_update','lastModified'];
+    for(const k of keys){ if(obj && obj[k]){ const t=Date.parse(obj[k]); if(!isNaN(t)) return t; } }
     return 0;
   }
-  async function headLM(url){
-    try{
-      const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-      const lm = r.headers.get('last-modified');
-      return lm ? Date.parse(lm) : 0;
-    }catch{ return 0; }
-  }
-  async function computeTs(){
-    // 1) JSON lesen und bekannte Zeitfelder prüfen
-    try{
-      const r = await fetch('brain/status.json', { cache: 'no-store' });
-      if(r.ok){
+
+  const q = `?v=${Date.now()}`;
+  const files = [
+    'brain/status.json',
+    'brain/tasks_summary.json',
+    'brain/tasks_done.json',
+    'brain/tasks_inbox.json'
+  ];
+
+  async function tryJson(){
+    for(const f of files){
+      try{
+        const r = await fetch(f + q, { cache: 'no-store' });
+        if(!r.ok) continue;
         const s = await r.json().catch(()=>null);
         const t = pickTs(s);
         if (t) return t;
-      }
-    }catch{}
-    // 2) HEAD-Fallbacks: nimm die jüngste Datei
-    const times = await Promise.all([
-      headLM('brain/status.json'),
-      headLM('brain/tasks_summary.json'),
-      headLM('brain/tasks_done.json'),
-      headLM('brain/tasks_inbox.json'),
-    ]);
-    return Math.max(0, ...times);
+      }catch{}
+    }
+    return 0;
   }
-  const el = document.getElementById('kg-sync-ts');
-  if(!el) return;
-  const ts = await computeTs();
+
+  async function tryHeaders(){
+    let best = 0;
+    for(const f of files){
+      try{
+        const r = await fetch(f + q, { method: 'HEAD', cache: 'no-store' });
+        const h = r.headers;
+        const v = h.get('last-modified') || h.get('date'); // beide sind OK
+        if (v){ const t = Date.parse(v); if(!isNaN(t)) best = Math.max(best, t); }
+      }catch{}
+    }
+    return best;
+  }
+
+  const ts = (await tryJson()) || (await tryHeaders());
   el.textContent = ts ? new Date(ts).toLocaleString() : 'n/a';
 })();
 </script>
