@@ -83,6 +83,50 @@
       "created_at": "2025-10-14T17:15:10Z",
       "updated_at": "2025-10-14T17:15:21Z",
       "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/8"
+    },
+    {
+      "id": 9,
+      "title": "Demo: CV-Schnellcheck (Inbox)",
+      "state": "open",
+      "labels": [
+        "kg-done"
+      ],
+      "created_at": "2025-10-15T06:00:48Z",
+      "updated_at": "2025-10-15T06:21:26Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/9"
+    },
+    {
+      "id": 10,
+      "title": "Demo: CV-Schnellcheck (Inbox)",
+      "state": "open",
+      "labels": [
+        "kg-done"
+      ],
+      "created_at": "2025-10-15T06:06:30Z",
+      "updated_at": "2025-10-15T06:21:25Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/10"
+    },
+    {
+      "id": 12,
+      "title": "Demo: Anschreiben-Template prüfen",
+      "state": "open",
+      "labels": [
+        "kg-done"
+      ],
+      "created_at": "2025-10-15T06:12:44Z",
+      "updated_at": "2025-10-15T06:21:28Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/12"
+    },
+    {
+      "id": 11,
+      "title": "Demo: CV-Schnellcheck (Inbox)",
+      "state": "open",
+      "labels": [
+        "kg-done"
+      ],
+      "created_at": "2025-10-15T06:12:44Z",
+      "updated_at": "2025-10-15T06:21:29Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/11"
     }
   ]
 }
