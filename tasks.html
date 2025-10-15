@@ -157,5 +157,16 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
   }
 })();
 </script>
+<script id="kg-status-fix">
+(async () => {
+  const el = document.getElementById('kg-sync-ts');
+  if (!el || (el.textContent && el.textContent.trim() !== 'n/a')) return;
+  try {
+    const r = await fetch('brain/status.json', { method: 'HEAD', cache: 'no-store' });
+    const lm = r.headers.get('last-modified');
+    if (lm) el.textContent = new Date(lm).toLocaleString();
+  } catch {}
+})();
+</script>
 </body>
 </html>
