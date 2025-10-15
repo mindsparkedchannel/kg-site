@@ -1,4 +1,5 @@
 name: kg-auto-worker
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,49 +13,100 @@ on:
         type: number
         required: false
         default: 5
-
   schedule:
-    - cron: "0 * * * *" # optional: stündlich; kannst du entfernen
+    - cron: "0 * * * *" # stündlich; bei Bedarf entfernen
 
 permissions:
   issues: write
   contents: read
 
+env:
+  LABEL_INBOX:  kg-inbox
+  LABEL_RUN:    kg-running
+  LABEL_DONE:   kg-done
+  # Für den Mirror-Dispatch:
+  OWNER_SITE:   ${{ vars.GITHUB_OWNER_SITE }}
+  REPO_SITE:    ${{ vars.GITHUB_REPO_SITE }}
+  DISPATCH_PAT: ${{ secrets.REPO_DISPATCH }}
+
 jobs:
   process-inbox:
     runs-on: ubuntu-latest
     steps:
-      - name: Move kg-inbox → kg-done (stub)
+      - name: Process kg-inbox → kg-done (Dry-Run aware, with Backoff)
         uses: actions/github-script@v7
         with:
           script: |
+            const core = require('@actions/core');
             const {owner, repo} = context.repo;
-            // offene Issues mit Label "kg-inbox"
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              owner, repo, state: 'open', labels: 'kg-inbox', per_page: 50
-            });
 
-            if (issues.length === 0) {
-              core.info('Keine kg-inbox Issues gefunden.');
-              return;
+            // Inputs robust lesen (funktioniert mit workflow_dispatch; bei schedule greifen Defaults/ENV)
+            const dry  = (core.getInput('DRY_RUN') || process.env.DRY_RUN || 'false').toLowerCase() === 'true';
+            const maxN = parseInt(core.getInput('MAX_ISSUES') || process.env.MAX_ISSUES || '5', 10);
+
+            const LABEL_INBOX = process.env.LABEL_INBOX || 'kg-inbox';
+            const LABEL_RUN   = process.env.LABEL_RUN   || 'kg-running';
+            const LABEL_DONE  = process.env.LABEL_DONE  || 'kg-done';
+
+            async function backoff(fn, tries=5){
+              let d=1000;
+              for(let i=1;i<=tries;i++){
+                try { return await fn(); } catch(e){
+                  if(i===tries) throw e;
+                  await new Promise(r=>setTimeout(r,d));
+                  d=Math.min(d*2,30000);
+                }
+              }
             }
 
-            for (const it of issues) {
-              // PRs überspringen
-              if (it.pull_request) continue;
+            // Kandidaten holen
+            let all = await backoff(()=>github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state:'open', labels: LABEL_INBOX, sort:'created', direction:'asc', per_page:100
+            }));
+            let issues = all.filter(x => !x.pull_request).slice(0, maxN);
 
+            core.summary.addHeading('kg-auto-worker');
+            core.summary.addRaw(`dry=${dry} maxN=${maxN} candidates=${issues.length}\n`);
+
+            for(const it of issues){
+              const num = it.number;
               const existing = it.labels.map(l => typeof l === 'string' ? l : l.name);
-              const keep = existing.filter(n => n !== 'kg-inbox' && n !== 'kg-running' && n !== 'kg-done');
-              const newLabels = [...new Set([...keep, 'kg-done'])];
 
-              await github.rest.issues.update({
-                owner, repo, issue_number: it.number, labels: newLabels
-              });
+              // → running
+              await backoff(()=>github.rest.issues.addLabels({ owner, repo, issue_number:num, labels:[LABEL_RUN] }));
+              await backoff(()=>github.rest.issues.removeLabel({ owner, repo, issue_number:num, name: LABEL_INBOX }).catch(()=>{}));
 
-              await github.rest.issues.createComment({
-                owner, repo, issue_number: it.number,
-                body: 'Auto-Worker (stub): processed → **kg-done** ✅'
-              });
-
-              core.info(`Issue #${it.number} → kg-done`);
+              if(dry){
+                await backoff(()=>github.rest.issues.createComment({
+                  owner, repo, issue_number:num, body:'🤖 [dry-run] geprüft; keine Änderung persistiert.'
+                }));
+                // zurückrollen
+                await backoff(()=>github.rest.issues.removeLabel({ owner, repo, issue_number:num, name: LABEL_RUN }).catch(()=>{}));
+                await backoff(()=>github.rest.issues.addLabels({ owner, repo, issue_number:num, labels:[LABEL_INBOX] }));
+              } else {
+                // → done
+                const keep = existing.filter(n => n !== LABEL_INBOX && n !== LABEL_RUN && n !== LABEL_DONE);
+                const newLabels = Array.from(new Set([...keep, LABEL_DONE]));
+                await backoff(()=>github.rest.issues.update({ owner, repo, issue_number:num, labels:newLabels }));
+                await backoff(()=>github.rest.issues.removeLabel({ owner, repo, issue_number:num, name: LABEL_RUN }).catch(()=>{}));
+                await backoff(()=>github.rest.issues.createComment({
+                  owner, repo, issue_number:num, body:'🤖 processed → **kg-done** ✅'
+                }));
+              }
+              core.info(`#${num} processed`);
             }
+
+            await core.summary.write();
+
+      - name: repository_dispatch → kg-site (brain-sync)
+        # nur wenn PAT/Owner/Repo gesetzt sind und NICHT im Dry-Run (bei schedule gibt es keine Inputs → dann "scharf")
+        if: ${{ env.DISPATCH_PAT != '' && env.OWNER_SITE != '' && env.REPO_SITE != '' && (github.event_name != 'workflow_dispatch' || inputs.DRY_RUN == 'false') }}
+        run: |
+          set -e
+          echo "Dispatch to ${OWNER_SITE}/${REPO_SITE} (brain-sync)..."
+          curl -sS -X POST \
+            -H "Authorization: token ${DISPATCH_PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${OWNER_SITE}/${REPO_SITE}/dispatches \
+            -d "{\"event_type\":\"brain-sync\",\"client_payload\":{\"reason\":\"auto-worker\",\"ts\":$(date +%s)}}"
+          echo "[OK] repository_dispatch sent"
