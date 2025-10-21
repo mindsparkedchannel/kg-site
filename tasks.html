@@ -267,5 +267,48 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
 })();
 </script>
 
+<!-- SYNC-BADGE-PATCH v2 (single badge) -->
+<style>
+  #last-sync-badge {
+    position: fixed; left: .5rem; top: .5rem;
+    font: 12px/1.2 system-ui, Segoe UI, Roboto, Arial, sans-serif;
+    padding: 2px 8px; border: 1px solid; border-radius: 999px; z-index: 9999;
+  }
+</style>
+<script>
+(async function(){
+  try{
+    // alte "Last sync:"-Knoten (außer unserem) entfernen
+    Array.from(document.querySelectorAll('body *')).forEach(el=>{
+      if(el.id==='last-sync-badge') return;
+      const t=(el.textContent||'').trim();
+      if(/^last sync:/i.test(t)) el.remove();
+    });
+
+    // unser einziger Badge
+    let b=document.getElementById('last-sync-badge');
+    if(!b){ b=document.createElement('span'); b.id='last-sync-badge'; document.body.appendChild(b); }
+
+    async function j(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); return r.json(); }
+    let ts=null;
+    try{ const a=await j('./brain/site_sync.json'); ts=a.ts||a.timestamp||a.updated||a.updated_at||a.synced_at||null; }catch{}
+    if(!ts){ try{ const s=await j('./brain/status.json'); ts=s&&(s.site_sync_ts||s.ts||s.updated_at||s.last_update||null); }catch{} }
+
+    let txt='Last sync: n/a', ok=false;
+    if(ts){
+      try{
+        const d=new Date(ts);
+        txt='Last sync: '+new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(d);
+        ok=true;
+      }catch{
+        txt='Last sync: '+ts; ok=true;
+      }
+    }
+    b.textContent = txt;
+    b.style.borderColor = ok ? '#0a0' : '#a00';
+    b.style.color      = ok ? '#0a0' : '#a00';
+  }catch(e){ /* noop */ }
+})();
+</script>
 </body>
 </html>
