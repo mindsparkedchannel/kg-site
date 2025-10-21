@@ -327,5 +327,50 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
   }catch(e){ /* noop */ }
 })();
 </script>
+<!-- HEALTH-BADGE v1 -->
+<style>
+  #health-badge{
+    position:fixed;right:.5rem;top:.5rem;z-index:9999;
+    font:12px/1.2 system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    padding:2px 8px;border:1px solid;border-radius:999px;cursor:pointer;
+  }
+</style>
+<script>
+(function(){
+  try{
+    // unser Badge
+    var b=document.getElementById('health-badge');
+    if(!b){ b=document.createElement('span'); b.id='health-badge'; document.body.appendChild(b); }
+    function setBadge(color,text,title){
+      b.textContent=text; b.style.borderColor=color; b.style.color=color; b.title=title||'';
+      b.onclick=function(){ window.open('./brain/health.json','_blank'); };
+    }
+    function get(u,cb){
+      var x=new XMLHttpRequest(); x.open('GET',u,true);
+      try{x.setRequestHeader('Cache-Control','no-store');}catch(e){}
+      x.onreadystatechange=function(){ if(x.readyState===4){ cb(x.status,x.responseText); } }; x.send();
+    }
+    get('./brain/health.json', function(status,body){
+      var color='#a00', text='Health: n/a', title='no data';
+      if(status===200 && body){
+        var j=null; try{ j=JSON.parse(body); }catch(e){}
+        if(j){
+          var bOk = j.brain && j.brain.status===200 && j.brain.ok===true;
+          var tOk = j.tasks && j.tasks.status===200 && j.tasks.ok===true;
+          var score = (bOk?1:0)+(tOk?1:0);
+          if(score===2){ color='#0a0'; text='Health: OK'; }
+          else if(score===1){ color='#a80'; text='Health: WARN'; }
+          else { color='#a00'; text='Health: FAIL'; }
+          var ts = j.ts || 'n/a';
+          var bt = j.brain ? ('brain '+j.brain.status+' ok='+j.brain.ok) : 'brain n/a';
+          var tt = j.tasks ? ('tasks '+j.tasks.status+' ok='+j.tasks.ok) : 'tasks n/a';
+          title = 'ts='+ts+'\n'+bt+'\n'+tt;
+        }
+      }
+      setBadge(color,text,title);
+    });
+  }catch(e){ /* noop */ }
+})();
+</script>
 </body>
 </html>
