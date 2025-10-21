@@ -1,0 +1,21 @@
+﻿{
+    "ts":  "2025-10-21T12:45:38Z",
+    "checks":  {
+                   "status":  {
+                                  "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/status",
+                                  "status":  200,
+                                  "ok":  true
+                              },
+                   "context":  {
+                                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/context",
+                                   "status":  200,
+                                   "ok":  false
+                               },
+                   "tasks_summary":  {
+                                         "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/tasks/summary",
+                                         "status":  200,
+                                         "ok":  true
+                                     }
+               },
+    "any_fail":  true
+}
