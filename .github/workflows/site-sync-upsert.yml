@@ -1,4 +1,6 @@
 name: site-sync-upsert
+permissions:
+  contents: write
 on:
   repository_dispatch:
     types: [brain-sync]
