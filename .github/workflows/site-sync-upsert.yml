@@ -1,0 +1,36 @@
+name: site-sync-upsert
+on:
+  repository_dispatch:
+    types: [brain-sync]
+  workflow_dispatch: {}
+jobs:
+  upsert:
+    runs-on: windows-latest
+    steps:
+      - name: Upsert brain/site_sync.json
+        shell: powershell
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO:  ${{ github.event.repository.name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+          $H=@{
+            'Authorization'="Bearer $env:TOKEN"
+            'Accept'='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='site-sync-upsert'
+          }
+          $base="https://api.github.com/repos/$($env:OWNER)/$($env:REPO)"
+          $path='brain/site_sync.json'
+          $now=(Get-Date).ToUniversalTime().ToString('s')+'Z'
+          $json = @{ ts=$now; source='brain-sync'; note='updated by site-sync-upsert' } | ConvertTo-Json -Compress
+          $b64  = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          $sha=$null
+          try{ $cur=Invoke-RestMethod -Method GET -Uri "$base/contents/$path" -Headers $H; if($cur.sha){ $sha=$cur.sha } }catch{}
+          $body=@{ message="sync: site_sync.json"; content=$b64; branch="main" }
+          if($sha){ $body.sha=$sha }
+          $resp=Invoke-RestMethod -Method PUT -Uri "$base/contents/$path" -Headers $H -Body ($body|ConvertTo-Json -Compress)
+          Write-Host ("[OK] site_sync.json @ "+$resp.commit.sha.Substring(0,7))
