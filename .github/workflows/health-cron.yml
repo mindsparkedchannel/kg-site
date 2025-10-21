@@ -1,0 +1,86 @@
+name: health-cron
+permissions:
+  contents: write
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [health-cron]
+jobs:
+  snapshot:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch health and write brain/health.json
+        shell: powershell
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+          function Invoke-HttpJson([string]$Method,[string]$Url){
+            $r=[System.Net.HttpWebRequest]::Create($Url)
+            $r.Method=$Method; $r.ProtocolVersion=[Version]::new(1,1)
+            $r.KeepAlive=$false; $r.SendChunked=$false
+            $r.AutomaticDecompression=[System.Net.DecompressionMethods]::GZip -bor [System.Net.DecompressionMethods]::Deflate
+            $r.Accept='application/json'; $r.UserAgent='kg-health-cron'
+            try{
+              $res=[System.Net.HttpWebResponse]$r.GetResponse()
+              $sc=[int]$res.StatusCode
+              $sr=New-Object IO.StreamReader($res.GetResponseStream()); $txt=$sr.ReadToEnd(); $sr.Close(); $res.Close()
+              @{Status=$sc;Text=$txt}
+            }catch [System.Net.WebException]{
+              $we=$_.Exception
+              $sc=if($we.Response){[int]$we.Response.StatusCode}else{0}
+              $txt=''; if($we.Response){ try{$sr=New-Object IO.StreamReader($we.Response.GetResponseStream());$txt=$sr.ReadToEnd();$sr.Close()}catch{} }
+              @{Status=$sc;Text=$txt;Error=$we.Message}
+            }
+          }
+          function Parse-JsonSafe([string]$txt){ if([string]::IsNullOrWhiteSpace($txt)){ $null } else { try{$txt|ConvertFrom-Json}catch{$null} } }
+          function Get-Prop($obj,[string]$name){ if($obj -and $obj.PSObject -and $obj.PSObject.Properties[$name]){ $obj.$name } else { $null } }
+          function Get-Key($ht,[string]$name){ if($ht -and ($ht -is [hashtable]) -and $ht.ContainsKey($name)){ $ht[$name] } else { $null } }
+
+          $SUB='mindsparked-channel'
+          $URL_BRAIN = "https://kg-brain.$SUB.workers.dev/health"
+          $URL_TASKS = "https://kg-tasks.$SUB.workers.dev/health"
+
+          $hb=Invoke-HttpJson 'GET' $URL_BRAIN
+          $ht=Invoke-HttpJson 'GET' $URL_TASKS
+          $jb=Parse-JsonSafe $hb.Text
+          $jt=Parse-JsonSafe $ht.Text
+
+          $okB = ($hb.Status -eq 200); $bOkJson=Get-Prop $jb 'ok'; if($bOkJson -ne $null -and -not [bool]$bOkJson){ $okB=$false }
+          $okT = ($ht.Status -eq 200); $tOkJson=Get-Prop $jt 'ok'; if($tOkJson -ne $null -and -not [bool]$tOkJson){ $okT=$false }
+
+          $envB=Get-Prop $jb 'env'; $envT=Get-Prop $jt 'env'
+          $msgB=Get-Prop $jb 'message'; $msgT=Get-Prop $jt 'message'
+          $errB=Get-Key $hb 'Error'; $errT=Get-Key $ht 'Error'
+          $noteB=if($errB){$errB}elseif($msgB){$msgB}else{$null}
+          $noteT=if($errT){$errT}elseif($msgT){$msgT}else{$null}
+
+          $now=(Get-Date).ToUniversalTime().ToString('s')+'Z'
+          $health=[ordered]@{
+            ts=$now
+            brain=[ordered]@{ url=$URL_BRAIN; status=$hb.Status; ok=$okB; env=$envB; note=$noteB }
+            tasks=[ordered]@{ url=$URL_TASKS; status=$ht.Status; ok=$okT; env=$envT; note=$noteT }
+          }
+
+          if(-not (Test-Path 'brain')){ New-Item -ItemType Directory -Path 'brain' | Out-Null }
+          ($health | ConvertTo-Json -Depth 6) | Set-Content -Path 'brain/health.json' -Encoding UTF8
+
+      - name: Commit & push if changed
+        shell: powershell
+        run: |
+          git config user.email "kg-bot@users.noreply.github.com"
+          git config user.name  "kg-bot"
+          git add brain/health.json
+          $changed = git status --porcelain "brain/health.json"
+          if ($changed) {
+            git commit -m "health: snapshot"
+            git push
+            Write-Host "[OK] health.json committed"
+          } else {
+            Write-Host "[OK] no changes"
+          }
