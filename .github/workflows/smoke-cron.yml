@@ -1,0 +1,79 @@
+name: smoke-cron
+permissions:
+  contents: write
+on:
+  schedule:
+    - cron: "0 * * * *"   # stündlich (UTC)
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [smoke-cron]
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Run smoke checks (status/context/tasks-summary)
+        shell: powershell
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+
+          function Invoke-HttpJson([string]$Method,[string]$Url){
+            $r=[System.Net.HttpWebRequest]::Create($Url)
+            $r.Method=$Method; $r.ProtocolVersion=[Version]::new(1,1)
+            $r.KeepAlive=$false; $r.SendChunked=$false
+            $r.AutomaticDecompression=[System.Net.DecompressionMethods]::GZip -bor [System.Net.DecompressionMethods]::Deflate
+            $r.Accept='application/json'; $r.UserAgent='kg-smoke-cron'
+            try{
+              $res=[System.Net.HttpWebResponse]$r.GetResponse()
+              $sc=[int]$res.StatusCode
+              $sr=New-Object IO.StreamReader($res.GetResponseStream()); $txt=$sr.ReadToEnd(); $sr.Close(); $res.Close()
+              @{Status=$sc;Text=$txt}
+            }catch [System.Net.WebException]{
+              $we=$_.Exception
+              $sc=if($we.Response){[int]$we.Response.StatusCode}else{0}
+              $txt=''; if($we.Response){ try{$sr=New-Object IO.StreamReader($we.Response.GetResponseStream());$txt=$sr.ReadToEnd();$sr.Close()}catch{} }
+              @{Status=$sc;Text=$txt;Error=$we.Message}
+            }
+          }
+          function Parse-JsonSafe([string]$txt){ if([string]::IsNullOrWhiteSpace($txt)){ $null } else { try{$txt|ConvertFrom-Json}catch{$null} } }
+
+          $SUB='mindsparked-channel'
+          $BASE="https://kg-brain.$SUB.workers.dev"
+          $checks = [ordered]@{}
+
+          foreach($c in @(
+            @{ key='status';        url=("$BASE/api/v1/status") },
+            @{ key='context';       url=("$BASE/api/v1/context") },
+            @{ key='tasks_summary'; url=("$BASE/api/v1/tasks/summary") }
+          )){
+            $r=Invoke-HttpJson 'GET' $c.url
+            $body=Parse-JsonSafe $r.Text
+            $ok=($r.Status -eq 200 -and $body -ne $null)
+            $checks[$c.key] = [ordered]@{ url=$c.url; status=$r.Status; ok=$ok }
+          }
+
+          $now=(Get-Date).ToUniversalTime().ToString('s')+'Z'
+          $smoke=[ordered]@{ ts=$now; checks=$checks; any_fail= -not (@($checks.Values | Where-Object { -not $_.ok }).Count -eq 0) }
+
+          if(-not (Test-Path 'brain')){ New-Item -ItemType Directory -Path 'brain' | Out-Null }
+          ($smoke | ConvertTo-Json -Depth 4) | Set-Content -Path 'brain/smoke.json' -Encoding UTF8
+
+      - name: Commit & push if changed
+        shell: powershell
+        run: |
+          git config user.email "kg-bot@users.noreply.github.com"
+          git config user.name  "kg-bot"
+          git add brain/smoke.json
+          $changed = git status --porcelain "brain/smoke.json"
+          if ($changed) {
+            git commit -m "smoke: snapshot"
+            git push
+            Write-Host "[OK] smoke.json committed"
+          } else {
+            Write-Host "[OK] no changes"
+          }
