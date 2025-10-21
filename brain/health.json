@@ -1,1 +1,22 @@
-{"ts":"2025-10-21T11:39:46Z","brain":{"url":"https://kg-brain.mindsparked-channel.workers.dev/health","status":200,"ok":true,"env":null,"note":null,"body":{"ok":true,"owner":"mindsparkedchannel","repo":"karrieregenie-command-center","branch":"main","start_wf":"start-session.yml","end_wf":"end-session-manual.yml","has_actions_token":true,"has_read_token":true,"tasks_enabled":true}},"tasks":{"url":"https://kg-tasks.mindsparked-channel.workers.dev/health","status":200,"ok":true,"env":{"owner":true,"repo":true,"token":true,"admin":true},"note":null,"body":{"ok":true,"ts":"2025-10-21T11:39:48.123Z","env":{"owner":true,"repo":true,"token":true,"admin":true}}}}
+﻿{
+    "ts":  "2025-10-21T11:52:40Z",
+    "brain":  {
+                  "url":  "https://kg-brain.mindsparked-channel.workers.dev/health",
+                  "status":  200,
+                  "ok":  true,
+                  "env":  null,
+                  "note":  null
+              },
+    "tasks":  {
+                  "url":  "https://kg-tasks.mindsparked-channel.workers.dev/health",
+                  "status":  200,
+                  "ok":  true,
+                  "env":  {
+                              "owner":  true,
+                              "repo":  true,
+                              "token":  true,
+                              "admin":  true
+                          },
+                  "note":  null
+              }
+}
