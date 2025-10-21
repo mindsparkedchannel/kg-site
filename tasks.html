@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>KarriereGenie — Tasks</title>
-  <span id="last-sync" style="font:12px/1.2 system-ui, sans-serif; padding:2px 6px; border:1px solid; border-radius:999px;"></span>
   <style>
     :root { --bg:#0b1220; --card:#121a2a; --text:#e6eefb; --muted:#9db2cf; --accent:#60a5fa; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; }
     * { box-sizing: border-box }
@@ -267,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
 })();
 </script>
 
-<!-- SYNC-BADGE-PATCH v2 (single badge) -->
+<!-- SYNC-BADGE-PATCH v2.2 (single badge, cleanup) -->
 <style>
   #last-sync-badge{
     position:fixed;left:.5rem;top:.5rem;z-index:9999;
@@ -276,43 +275,57 @@ document.addEventListener('DOMContentLoaded', () => { bind(); loadAll(); });
   }
 </style>
 <script>
-(async function(){
+(function(){
   try{
-    // alte "Last sync:"-Nodes (außer unserem) entfernen
-    Array.from(document.querySelectorAll('body *')).forEach(el=>{
+    // Safety: alle "Last sync:"-Nodes außer unserem Badge entfernen
+    Array.prototype.slice.call(document.querySelectorAll('body *')).forEach(function(el){
       if(el.id==='last-sync-badge') return;
-      const t=(el.textContent||'').trim(); if(/^last sync:/i.test(t)) el.remove();
+      var t=(el.textContent||'').trim();
+      if(/^last sync:/i.test(t)) { try{ el.parentNode.removeChild(el); }catch(e){} }
     });
-    // unser Badge
-    let b=document.getElementById('last-sync-badge');
+    // Legacy-Span explizit weg
+    var legacy=document.getElementById('last-sync'); if(legacy&&legacy.parentNode){ legacy.parentNode.removeChild(legacy); }
+
+    // Unser (einziger) Badge
+    var b=document.getElementById('last-sync-badge');
     if(!b){ b=document.createElement('span'); b.id='last-sync-badge'; document.body.appendChild(b); }
-    async function j(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); return r.json(); }
-    let ts=null, source='site_sync.json';
-    try{ const a=await j('./brain/site_sync.json'); ts=a.ts||a.timestamp||a.updated||a.updated_at||a.synced_at||null; }catch{}
-    if(!ts){ try{ const s=await j('./brain/status.json'); ts=s&&(s.site_sync_ts||s.ts||s.updated_at||s.last_update||null); source='status.json'; }catch{} }
-    let ok=false, iso='n/a', rel='n/a', color='#a00';
-    if(ts){
-      iso=ts;
-      try{
-        const d=new Date(ts), now=new Date();
-        const mins=Math.floor((now-d)/60000);
-        const timeFmt=new Intl.DateTimeFormat(undefined,{timeStyle:'short'});
-        const dateFmt=new Intl.DateTimeFormat(undefined,{dateStyle:'medium'});
-        rel=`${dateFmt.format(d)}, ${timeFmt.format(d)}`;
-        if(mins<=10){ color='#0a0'; ok=true }
-        else if(mins<=60){ color='#a80'; ok=true }
-        else{ color='#a00'; ok=true }
-        b.textContent = `Last sync: ${timeFmt.format(d)}`;
-      }catch{
-        b.textContent = 'Last sync: '+ts; ok=true; color='#0a0';
+
+    function setBadge(ts, source){
+      var color='#a00', txt='Last sync: n/a', iso='n/a', rel='n/a';
+      if(ts){
+        iso=ts;
+        try{
+          var d=new Date(ts), now=new Date();
+          var mins=Math.floor((now-d)/60000);
+          var tf=new Intl.DateTimeFormat(undefined,{timeStyle:'short'});
+          var df=new Intl.DateTimeFormat(undefined,{dateStyle:'medium'});
+          rel=df.format(d)+', '+tf.format(d);
+          if(mins<=10){ color='#0a0'; }
+          else if(mins<=60){ color='#a80'; }
+          else { color='#a00'; }
+          txt='Last sync: '+tf.format(d);
+        }catch(e){ txt='Last sync: '+ts; color='#0a0'; }
       }
-    } else {
-      b.textContent='Last sync: n/a';
+      b.textContent=txt;
+      b.style.borderColor=color; b.style.color=color;
+      b.title='Source: '+source+'\nISO: '+iso+'\nLocal: '+rel;
+      b.onclick=function(){ window.open('./brain/site_sync.json','_blank'); };
     }
-    b.style.borderColor=color; b.style.color=color;
-    b.title = `Source: ${source}\nISO: ${iso}\nLocal: ${rel}`;
-    b.onclick = function(){ window.open('./brain/site_sync.json','_blank'); };
+
+    // Daten laden
+    (function(){
+      var ts=null, src='site_sync.json';
+      var fetchJson=function(u,cb){ var x=new XMLHttpRequest(); x.open('GET',u,true); x.setRequestHeader('Cache-Control','no-store'); x.onreadystatechange=function(){ if(x.readyState===4){ try{ cb(x.status, x.responseText?JSON.parse(x.responseText):null); }catch(e){ cb(x.status,null); } } }; x.send(); };
+      fetchJson('./brain/site_sync.json', function(s,a){
+        if(s===200 && a){ ts=a.ts||a.timestamp||a.updated||a.updated_at||a.synced_at||null; }
+        if(!ts){
+          src='status.json';
+          fetchJson('./brain/status.json', function(s2,b){ if(s2===200 && b){ ts=b.site_sync_ts||b.ts||b.updated_at||b.last_update||null; } setBadge(ts, src); });
+        } else { setBadge(ts, src); }
+      });
+    })();
   }catch(e){ /* noop */ }
 })();
-</script></body>
+</script>
+</body>
 </html>
