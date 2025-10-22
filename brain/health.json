@@ -1,22 +1,6 @@
-﻿{
-    "ts":  "2025-10-22T06:14:14Z",
-    "brain":  {
-                  "url":  "https://kg-brain.mindsparked-channel.workers.dev/health",
-                  "status":  200,
-                  "ok":  true,
-                  "env":  null,
-                  "note":  null
-              },
-    "tasks":  {
-                  "url":  "https://kg-tasks.mindsparked-channel.workers.dev/health",
-                  "status":  200,
-                  "ok":  true,
-                  "env":  {
-                              "owner":  true,
-                              "repo":  true,
-                              "token":  true,
-                              "admin":  true
-                          },
-                  "note":  null
-              }
+{
+    "ok":  false,
+    "note":  "force health alert at 20251022T083335Z",
+    "source":  "manual-test",
+    "ts":  "2025-10-22T06:33:35Z"
 }
