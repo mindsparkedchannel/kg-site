@@ -260,6 +260,17 @@
       "created_at": "2025-10-24T06:43:51Z",
       "updated_at": "2025-10-24T06:44:06Z",
       "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/26"
+    },
+    {
+      "id": 27,
+      "title": "KG E2E CI – 2025-10-24 18:42:30",
+      "state": "open",
+      "labels": [
+        "kg-done"
+      ],
+      "created_at": "2025-10-24T18:42:33Z",
+      "updated_at": "2025-10-24T18:42:52Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/27"
     }
   ]
 }
