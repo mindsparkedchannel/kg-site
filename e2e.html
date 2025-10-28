@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<title>KarriereGenie · E2E Status</title>
+<style>
+  :root{--ok:#16a34a;--fail:#dc2626;--bg:#f6f7f9;--fg:#111827}
+  *{box-sizing:border-box} body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;margin:24px;color:var(--fg)}
+  .badge{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;background:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .dot{width:12px;height:12px;border-radius:50%;background:gray}
+  .meta{opacity:.7}
+  a{color:inherit;text-decoration:underline}
+</style>
+<h1>KarriereGenie · E2E Status</h1>
+<div class="badge" id="badge">
+  <span class="dot" id="dot"></span>
+  <span id="text">Lade Status…</span>
+  <span class="meta" id="meta"></span>
+</div>
+<script>
+(async () => {
+  const elDot = document.getElementById('dot');
+  const elText= document.getElementById('text');
+  const elMeta= document.getElementById('meta');
+  try{
+    const r = await fetch('brain/last_e2e.json?ts=' + Date.now(), {cache:'no-store'});
+    const j = await r.json();
+    const ok = !!j.ok;
+    elDot.style.background = ok ? 'var(--ok)' : 'var(--fail)';
+    const ts  = j.ts || '';
+    const c1  = j.cases && j.cases.case1 ? j.cases.case1.http : '?';
+    const c2  = j.cases && j.cases.case2 ? j.cases.case2.http : '?';
+    const c3  = j.cases && j.cases.case3 ? j.cases.case3.http : '?';
+    const num = j.cases && j.cases.case3 && j.cases.case3.number ? String(j.cases.case3.number) : '';
+    const url = j.cases && j.cases.case3 && j.cases.case3.url ? j.cases.case3.url : '';
+    elText.textContent = ok ? '✅ E2E PASS' : '❌ E2E FAIL';
+    let meta = '· ' + ts + ' · C1='+c1+' C2='+c2+' C3='+c3;
+    if(url && num){ meta += ' · '; const a=document.createElement('a'); a.href=url; a.textContent='#'+num; a.rel='noopener'; a.target='_blank'; elMeta.innerHTML=''; elMeta.appendChild(document.createTextNode(meta + ' ')); elMeta.appendChild(a); }
+    else { elMeta.textContent = meta; }
+  }catch(e){
+    elDot.style.background = 'var(--fail)';
+    elText.textContent = 'Fehler beim Laden';
+    elMeta.textContent = String(e && e.message || e);
+  }
+})();
+</script>
