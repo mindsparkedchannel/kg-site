@@ -2,5 +2,18 @@
   "ok": true,
   "state": "inbox",
   "label": "kg-inbox",
-  "items": []
+  "items": [
+    {
+      "id": 43,
+      "title": "E2E 2025-10-28T11:41:21",
+      "state": "open",
+      "labels": [
+        "kg-inbox",
+        "kg-priority:low"
+      ],
+      "created_at": "2025-10-28T10:41:22Z",
+      "updated_at": "2025-10-28T10:41:22Z",
+      "url": "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/43"
+    }
+  ]
 }
