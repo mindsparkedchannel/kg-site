@@ -1,0 +1,24 @@
+{
+    "ok":  true,
+    "ts":  "2025-10-28T13:30:16+01:00",
+    "worker":  "kg-tasks",
+    "base":  "https://kg-tasks.mindsparked-channel.workers.dev",
+    "cases":  {
+                  "case1":  {
+                                "http":  401,
+                                "ok":  true,
+                                "error":  "unauthorized"
+                            },
+                  "case2":  {
+                                "http":  400,
+                                "ok":  true,
+                                "error":  "title_required"
+                            },
+                  "case3":  {
+                                "http":  201,
+                                "ok":  true,
+                                "number":  44,
+                                "url":  "https://github.com/mindsparkedchannel/karrieregenie-command-center/issues/44"
+                            }
+              }
+}
