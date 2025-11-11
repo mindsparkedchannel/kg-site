@@ -1,5 +1,5 @@
 ﻿{
-    "ts":  "2025-11-11T00:53:40Z",
+    "ts":  "2025-11-11T02:28:01Z",
     "checks":  {
                    "status":  {
                                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/status",
