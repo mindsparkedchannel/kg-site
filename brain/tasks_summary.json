@@ -1,1 +1,7 @@
-{"ok":false,"error":"fetch-failed"}
+{
+  "inbox": 0,
+  "running": 0,
+  "done": 79,
+  "failed": 0,
+  "total": 87
+}
