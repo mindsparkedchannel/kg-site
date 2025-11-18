@@ -1,17 +1,20 @@
 ﻿{
-    "ts":  "2025-11-18T17:00:09Z",
+    "ts":  "2025-11-18T17:15:42Z",
     "brain":  {
                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/health",
-                  "status":  500,
-                  "ok":  false,
+                  "status":  200,
+                  "ok":  true,
                   "env":  null,
-                  "note":  "The remote server returned an error: (500) Internal Server Error."
+                  "note":  null
               },
     "tasks":  {
                   "url":  "https://kg-tasks.mindsparked-channel.workers.dev/health",
-                  "status":  0,
-                  "ok":  false,
-                  "env":  null,
-                  "note":  "The operation has timed out"
+                  "status":  200,
+                  "ok":  true,
+                  "env":  {
+                              "owner":  true,
+                              "repo":  true
+                          },
+                  "note":  null
               }
 }
