@@ -1,5 +1,5 @@
 ﻿{
-    "ts":  "2025-11-18T11:10:10Z",
+    "ts":  "2025-11-18T12:22:23Z",
     "checks":  {
                    "status":  {
                                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/status",
@@ -8,7 +8,7 @@
                               },
                    "context":  {
                                    "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/context",
-                                   "status":  200,
+                                   "status":  500,
                                    "ok":  false
                                },
                    "tasks_summary":  {
