@@ -1,20 +1,17 @@
 ﻿{
-    "ts":  "2025-11-18T12:17:22Z",
+    "ts":  "2025-11-18T13:02:11Z",
     "brain":  {
                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/health",
-                  "status":  200,
-                  "ok":  true,
+                  "status":  500,
+                  "ok":  false,
                   "env":  null,
-                  "note":  null
+                  "note":  "The remote server returned an error: (500) Internal Server Error."
               },
     "tasks":  {
                   "url":  "https://kg-tasks.mindsparked-channel.workers.dev/health",
-                  "status":  200,
-                  "ok":  true,
-                  "env":  {
-                              "owner":  true,
-                              "repo":  true
-                          },
-                  "note":  null
+                  "status":  500,
+                  "ok":  false,
+                  "env":  null,
+                  "note":  "The remote server returned an error: (500) Internal Server Error."
               }
 }
