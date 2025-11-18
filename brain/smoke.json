@@ -1,10 +1,10 @@
 ﻿{
-    "ts":  "2025-11-18T12:22:23Z",
+    "ts":  "2025-11-18T13:26:19Z",
     "checks":  {
                    "status":  {
                                   "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/status",
-                                  "status":  200,
-                                  "ok":  true
+                                  "status":  500,
+                                  "ok":  false
                               },
                    "context":  {
                                    "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/context",
@@ -13,8 +13,8 @@
                                },
                    "tasks_summary":  {
                                          "url":  "https://kg-brain.mindsparked-channel.workers.dev/api/v1/tasks/summary",
-                                         "status":  200,
-                                         "ok":  true
+                                         "status":  500,
+                                         "ok":  false
                                      }
                },
     "any_fail":  true
