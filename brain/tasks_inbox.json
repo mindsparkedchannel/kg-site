@@ -1,6 +1,1 @@
-{
-  "ok": true,
-  "state": "inbox",
-  "label": "kg-inbox",
-  "items": []
-}
+{"ok":false,"error":"fetch-failed"}
